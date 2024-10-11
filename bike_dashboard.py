@@ -1,4 +1,4 @@
-# memanggil semua library yang dibutuhkan.
+# Memanggil semua library yang dibutuhkan
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,51 +7,46 @@ import streamlit as st
 from babel.numbers import format_currency
 sns.set(style='dark')
 
-import pandas as pd
+# Title aplikasi
+st.title("Dashboard Peminjaman Sepeda")
 
 # Memuat dataset yang diunggah
 hour_df = pd.read_csv('hour_data.csv')
 day_df = pd.read_csv('day_data.csv')
 
 # Tampilkan beberapa baris pertama dari dataset
-print("Dataset Hour:")
-print(hour_df.head())
-print("\nDataset Day:")
-print(day_df.head())
+st.subheader("Dataset Hour:")
+st.dataframe(hour_df.head())  # Menampilkan dataset di Streamlit
 
-hour_df.info()
-day_df.info()
+st.subheader("Dataset Day:")
+st.dataframe(day_df.head())  # Menampilkan dataset di Streamlit
 
-# memeriksa tipe data dari kolom dalam day_df
-day_df.info()
+# Informasi dataset
+st.subheader("Informasi Dataset Hour:")
+st.write(hour_df.info())  # Menampilkan info dataset di Streamlit
 
-# memeriksa tipe data dari kolom dalam hour_df
-hour_df.info()
+st.subheader("Informasi Dataset Day:")
+st.write(day_df.info())  # Menampilkan info dataset di Streamlit
 
-# memeriksa missing value di dataset day_df dan hour_df
-day_df.isna().sum()
-hour_df.isna().sum()
+# Memeriksa missing values
+st.subheader("Missing Values in Dataset Hour:")
+st.write(hour_df.isna().sum())
 
-# memeriksa duplikasi data
-day_df.duplicated().sum()
-hour_df.duplicated().sum()
+st.subheader("Missing Values in Dataset Day:")
+st.write(day_df.isna().sum())
 
-# parameter statistik dari day_df
-day_df.describe(include="all")
+# Parameter statistik dari dataset
+st.subheader("Statistik Dataset Day:")
+st.write(day_df.describe(include="all"))
 
-# parameter statistik dari hour_df
-hour_df.describe(include="all")
+st.subheader("Statistik Dataset Hour:")
+st.write(hour_df.describe(include="all"))
 
+# Mengubah kolom tanggal menjadi format datetime
 day_df["dteday"] = pd.to_datetime(day_df["dteday"])
 hour_df["dteday"] = pd.to_datetime(hour_df["dteday"])
 
-day_df.info()
-
-hour_df.info()
-
-day_df.describe(include="all")
-
-# melakukan mapping pada day_df
+# Mapping untuk kategorikal data
 season_map = {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}
 year_map = {0: 2011, 1: 2012}
 holiday_map = {0: "Not Holiday", 1: "Holiday"}
@@ -64,84 +59,33 @@ day_df['holiday'] = day_df['holiday'].map(holiday_map)
 day_df['workingday'] = day_df['workingday'].map(workingday_map)
 day_df['weekday'] = day_df['weekday'].map(weekday_map)
 
-# jenis data-data kategorikal dari day_df
+# Menampilkan visualisasi distribusi data kategorikal
+st.subheader("Distribusi Data Kategorikal Day Dataset:")
 categorical_data = ["season", "yr", "holiday", "workingday", "weekday", "weathersit"]
-
-# subset untuk data kategorikal
-daily_categorical_data = day_df[categorical_data]
-
-for column in daily_categorical_data.columns:
-    sns.histplot(daily_categorical_data[column], kde=True)
+for column in categorical_data:
+    plt.figure(figsize=(8, 4))
+    sns.histplot(day_df[column], kde=True)
     plt.title(f"Distribution of {column}")
-    plt.xlabel(column)
-    plt.ylabel("Count")
-    plt.show()
+    st.pyplot(plt)  # Menampilkan plot di Streamlit
 
-hour_df.describe(include="all")
-
-# melakukan mapping pada hour_df
-season_map = {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}
-year_map = {0: 2011, 1: 2012}
-holiday_map = {0: "Not Holiday", 1: "Holiday"}
-workingday_map = {0: "Holiday", 1: "Working Day"}
-weekday_map = {0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday", 5: "Friday", 6: "Saturday"}
-
-hour_df['season'] = hour_df['season'].map(season_map)
-hour_df['yr'] = hour_df['yr'].map(year_map)
-hour_df['holiday'] = hour_df['holiday'].map(holiday_map)
-hour_df['workingday'] = hour_df['workingday'].map(workingday_map)
-hour_df['weekday'] = hour_df['weekday'].map(weekday_map)
-
-# jenis data-data kategorikal dari hour_df
-categorical_data = ["season", "yr", "holiday", "workingday", "weekday", "weathersit"]
-
-# subset untuk data kategorikal
-daily_categorical_data = hour_df[categorical_data]
-
-for column in daily_categorical_data.columns:
-    sns.histplot(daily_categorical_data[column], kde=True)
-    plt.title(f"Distribution of {column}")
-    plt.xlabel(column)
-    plt.ylabel("Count")
-    plt.show()
-
-import matplotlib.pyplot as plt
-
-# Menjumlahkan semua elemen dalam kolom casual
+# Pie chart untuk distribusi peminjaman sepeda
+st.subheader("Distribusi Peminjaman Sepeda (Casual vs Registered):")
 total_casual = day_df['casual'].sum()
-
-# Menjumlahkan semua elemen dalam kolom registered
 total_registered = day_df['registered'].sum()
 
-# Membuat data untuk pie plot
 data = [total_casual, total_registered]
 labels = ['Casual', 'Registered']
 
-# Membuat pie plot
-plt.figure(figsize=(6, 6))  # Ukuran pie chart
+plt.figure(figsize=(6, 6))
 plt.pie(data, labels=labels, autopct='%1.1f%%', colors=["#FF7F50", "#A52A2A"], startangle=90, explode=[0.05, 0], shadow=True)
-
-# Menambahkan judul
 plt.title('Distribusi Peminjaman Sepeda (Casual vs Registered)')
+st.pyplot(plt)  # Menampilkan pie chart di Streamlit
 
-# Menampilkan pie plot
-plt.show()
-
-# Menghitung total penyewaan sepeda berdasarkan workingday dan tahun
+# Bar plot untuk total penyewaan berdasarkan workingday dan tahun
+st.subheader("Jumlah Total Sepeda yang Disewakan Berdasarkan Hari Kerja dan Tahun:")
 working_counts = day_df.groupby(["workingday", "yr"])["cnt"].sum().reset_index()
 
-# Membuat plot bar
+plt.figure(figsize=(8, 4))
 sns.barplot(data=working_counts, x="workingday", y="cnt", hue="yr", palette="viridis")
-
-# Mengatur judul dan label sumbu
-plt.title("Jumlah total sepeda yang disewakan berdasarkan hari kerja")
-plt.ylabel("Jumlah")
-
-# Tampilkan plot
-plt.show()
-
-season_counts = day_df.groupby("season")["cnt"].sum().sort_values(ascending=False).reset_index()
-season_counts.head()
-
-temp_counts = hour_df.groupby("temp")["cnt"].sum().sort_values(ascending=False).reset_index()
-temp_counts.head()
+plt.title("Jumlah Total Sepeda yang Disewakan Berdasarkan Hari Kerja")
+st.pyplot(plt)  # Menampilkan bar plot di Streamlit
